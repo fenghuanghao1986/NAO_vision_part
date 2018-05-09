@@ -109,6 +109,9 @@ while True:
                 # text variables
                 dX = pts[-10][0] - pts[i][0]
                 dY = pts[-10][1] - pts[i][1]
+                # the differences between the x and y coordinates
+                # of the current frame and a frame towards the end
+                # of the buffer, respectively
                 (dirX, dirY) = ("","")
                 
                 # ensure there is significant movement in 
