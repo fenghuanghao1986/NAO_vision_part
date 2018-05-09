@@ -94,4 +94,61 @@ while True:
                        (0, 255, 255), 2)
             cv2.circle(frame, center, 5, (0, 0, 255), -1)
             pts.appendleft(center)
+        # loop over the set of tracked points
+        for i in np.arange(1, len(pts)):
+            # if either of the tracked points are None
+            # ignore them
+            if pts[i - 1] is None or pts[i] is None:
+                continue
             
+            # check to see if enough points have been accumulated
+            # in the buff
+            if counter >= 10 and i == 1 and len(pts) == args["buffer"]:
+                # compute the difference between the x and y
+                # coordinates and re-initialize the direction
+                # text variables
+                dX = pts[-10][0] - pts[i][0]
+                dY = pts[-10][1] - pts[i][1]
+                (dirX, dirY) = ("","")
+                
+                # ensure there is significant movement in 
+                # the x-direction
+                if np.abs(dX) > 20:
+                    dirX = "East" if np.sign(dX) == 1 else "West"
+                    
+                # ensure there is significant movement in 
+                # the y-direction
+                if np.abs(dY) > 20:
+                    dirY = "North" if np.sign(dY) ==1 else "South"
+                    
+                # handle when both directions are non-empty
+                if dirX != "" and dirY != "":
+                    direction = "{}-{}".format(dirY, dirX)
+                # otherwise, only one direction is non-empty
+                else:
+                    direction = dirX if dirX != "" else dirY
+                
+            # otherwise , computer the thickness of the line and 
+            # draw the connecting lines
+            thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+            cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
+            
+        # show the movement deltas and the direction of movement on
+        # the frame
+        cv2.putText(frame, direction, (10, 30), cv2.FONT_HERSHEY_SIMPLEX,
+                    0.35, (0, 0, 255), 1)
+        
+        # show the frame to our screen and increment the frame counter
+        cv2.imshow("Frame", frame)
+        key = cv2.waitKey(1) & 0xFF
+        counter += 1
+        
+        # if the 'q' key is pressed, stop the loop
+        if key == ord("q"):
+            break
+        
+# cleanup the camera and close any open windows
+camera.release()
+cv2.destroyAllWindows()
+
+                
